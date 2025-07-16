@@ -19,7 +19,7 @@ In this case, the data did not need engineering but if it does, this will includ
 
 ---
 
-## how to get the data
+## How to get the data
 
 the dataset is stored in the `data/` directory as `bank.csv`.
 
@@ -27,40 +27,56 @@ if sharing this repo without data, it can be accessed in Kaggle: https://www.kag
 
 ---
 
-## folder structure
+## Folder structure
 
 project_root/
+
 ├── data/ - raw csv data
+
 ├── models/ -  saved xgboost model
+
 ├── outputs/ - predictions and logs
+
 ├── reports/ - evaluation metrics
+
 ├── src/ - all pipeline code
+
 │ ├── data_preprocessing.py
+
 │ ├── feature_engineering.py
+
 │ ├── model_training.py
+
 │ ├── evaluation.py
+
 │ └── run_pipeline.py
+
 ├── tests/ - basic pytest script
+
 ├── .venv/ - uv virtual environment
+
 ├── requirements.txt
+
 ├── .pre-commit-config.yaml
+
 └── README.md
+
 
 i separated raw data, models, code, and results for clarity and reproducibility.
 
 ---
 
-## setup instructions
+## Setup Instructions
 
 this project uses [uv](https://astral.sh/blog/uv-intro/) for fast environment management.
 
-### to run locally:
+### To run locally:
 
-1. create a virtual environment: C:\Users\MaryJuneRicana\Downloads\uv\uv.exe venv
+1. create a virtual environment: \uv\uv.exe venv
 2. activate it: .venv\Scripts\activate
 3. install dependencies: pip install pandas, numpy, scikit-learn, xgboost, pytest
 
-## running the pipeline
+## Running the pipeline
 
 from the project root: python src/run_pipeline.py
 
@@ -82,7 +98,7 @@ this project uses pre-commit hooks to catch code issues early.
 - `trailing-whitespace`: removes trailing spaces
 - `end-of-file-fixer`: adds newline at end of files
 
-### setup:
+### Setup:
 uv pip install pre-commit
 pre-commit install
 pre-commit run --all-files
@@ -104,7 +120,7 @@ to run tests: pytest
 
 ---
 
-## reflection
+## Reflection
 
 i'm used to working with notebooks, so it was a bit tricky adjusting to running everything through `.py` scripts and the command line. it took a while to get used to writing modular code and making sure all the files worked together through one pipeline script.
 
