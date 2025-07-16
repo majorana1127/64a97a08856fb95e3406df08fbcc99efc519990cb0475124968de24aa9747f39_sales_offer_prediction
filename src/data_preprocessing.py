@@ -5,7 +5,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 def preprocess_data():
-    df = pd.read_csv("../data/bank.csv")
+    df = pd.read_csv("data/bank.csv")
 
     df = df.drop(columns=["duration"])
 
