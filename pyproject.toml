@@ -1,0 +1,5 @@
+[tool.uv.dependencies]
+numpy = "*"
+pandas = "*"
+scikit-learn = "*"
+pre-commit = "*"
