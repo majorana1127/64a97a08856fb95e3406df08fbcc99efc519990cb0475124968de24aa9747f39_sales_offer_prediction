@@ -106,6 +106,11 @@ to run tests: pytest
 
 ## reflection
 
-setting up uv on windows with restricted permissions was a bit tricky — especially when configuring virtual environments and `pyproject.toml`. another learning curve was wiring all the pipeline components together while debugging path issues between notebooks and `.py` files. eventually, the modular approach made it easy to manage everything.
+i'm used to working with notebooks, so it was a bit tricky adjusting to running everything through `.py` scripts and the command line. it took a while to get used to writing modular code and making sure all the files worked together through one pipeline script.
 
+setting up the environment with uv was also confusing at first, especially on a windows work laptop where i didn’t have admin rights and couldn't add uv to my system path. i had to manually run uv from the downloads folder, which added friction to every step. even activating the virtual environment initially threw a script permission error, which i had to fix with execution policies.
+
+pre-commit was another bump since ruff blocked my commits several times and i had to understand how linting worked, how to manually stage fixed files, and how to interpret error messages that weren’t always beginner-friendly.
+
+it was challenging overall but i now appreciate the structure and discipline this kind of workflow enforces. it gave me a much clearer sense of what production-ready code actually looks like.
 ---
