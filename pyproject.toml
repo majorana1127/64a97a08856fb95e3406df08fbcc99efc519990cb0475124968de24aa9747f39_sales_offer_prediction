@@ -1,5 +1,10 @@
 [tool.uv.dependencies]
-numpy = "*"
 pandas = "*"
+numpy = "*"
 scikit-learn = "*"
+xgboost = "*"
+joblib = "*"
 pre-commit = "*"
+ruff = "*"
+ipykernel = "*"
+pytest = "*"

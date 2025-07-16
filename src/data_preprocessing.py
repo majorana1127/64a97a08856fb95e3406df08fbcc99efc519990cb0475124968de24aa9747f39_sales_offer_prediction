@@ -32,4 +32,9 @@ def preprocess_data():
         X_processed, y, test_size=0.2, random_state=42
     )
 
+    pd.DataFrame(X_train).to_csv("data/train_X.csv", index=False)
+    pd.DataFrame(X_test).to_csv("data/test_X.csv", index=False)
+    pd.DataFrame(y_train).to_csv("data/train_y.csv", index=False)
+    pd.DataFrame(y_test).to_csv("data/test_y.csv", index=False)
+
     return (X_train, y_train), (X_test, y_test)
