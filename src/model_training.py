@@ -1,9 +1,11 @@
 import xgboost as xgb
 import joblib
 from sklearn.model_selection import GridSearchCV
+import pandas as pd
 
-def train_model(train_data):
-    X_train, y_train = train_data
+def train_model():
+    X_train = pd.read_csv("data/train_X.csv")
+    y_train = pd.read_csv("data/train_y.csv").values.ravel()
 
     xgb_clf = xgb.XGBClassifier(
         objective="binary:logistic",
@@ -32,4 +34,4 @@ def train_model(train_data):
 
     joblib.dump(best_model, "models/model.pkl")
 
-    return best_model
+    return

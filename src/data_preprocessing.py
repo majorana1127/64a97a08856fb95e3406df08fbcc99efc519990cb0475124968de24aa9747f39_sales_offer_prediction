@@ -37,4 +37,4 @@ def preprocess_data():
     pd.DataFrame(y_train).to_csv("data/train_y.csv", index=False)
     pd.DataFrame(y_test).to_csv("data/test_y.csv", index=False)
 
-    return (X_train, y_train), (X_test, y_test)
+    return

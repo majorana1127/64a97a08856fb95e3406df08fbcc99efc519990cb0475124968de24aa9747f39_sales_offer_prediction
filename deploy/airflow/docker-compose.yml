@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    restart: always
+
+  webserver:
+    image: apache/airflow:2.9.3
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__WEBSERVER__DEFAULT_USER: airflow
+      AIRFLOW__WEBSERVER__DEFAULT_PASSWORD: airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./requirements.txt:/requirements.txt
+      - ../../src:/opt/airflow/src
+      - ../../data:/opt/airflow/data
+      - ../../models:/opt/airflow/models
+      - ../../reports:/opt/airflow/reports
+    command: >
+      bash -c "pip install --no-cache-dir -r /requirements.txt &&
+               airflow db upgrade &&
+               airflow webserver"
+    ports:
+      - "8080:8080"
+    restart: always
+
+  scheduler:
+    image: apache/airflow:2.9.3
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./requirements.txt:/requirements.txt
+      - ../../src:/opt/airflow/src
+      - ../../data:/opt/airflow/data
+      - ../../models:/opt/airflow/models
+      - ../../reports:/opt/airflow/reports
+    command: >
+      bash -c "pip install --no-cache-dir -r /requirements.txt &&
+               airflow scheduler"
+    restart: always
+
+volumes:
+  postgres-db-volume:

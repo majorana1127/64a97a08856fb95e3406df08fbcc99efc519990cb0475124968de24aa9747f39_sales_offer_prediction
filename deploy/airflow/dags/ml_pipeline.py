@@ -20,17 +20,17 @@ with DAG('ml_pipeline',
 
     preprocess_task = PythonOperator(
         task_id='preprocess',
-        python_callable=data_preprocessing.run
+        python_callable=data_preprocessing.preprocess_data
     )
 
     train_task = PythonOperator(
         task_id='train',
-        python_callable=model_training.run
+        python_callable=model_training.train_model
     )
 
     evaluate_task = PythonOperator(
         task_id='evaluate',
-        python_callable=evaluation.run
+        python_callable=evaluation.evaluate_model
     )
 
     preprocess_task >> train_task >> evaluate_task
