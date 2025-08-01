@@ -33,25 +33,45 @@ https://www.kaggle.com/datasets/janiobachmann/bank-marketing-dataset?resource=do
 ## Folder Structure
 
 project_root/
+
 ├── data/ # Raw CSV data
+
 ├── models/ # Saved XGBoost model
+
 ├── outputs/ # Predictions
+
 ├── reports/ # Evaluation metrics
+
 ├── src/ # All pipeline code
+
 │ ├── data_preprocessing.py
+
 │ ├── feature_engineering.py
+
 │ ├── model_training.py
+
 │ ├── evaluation.py
+
 │ └── run_pipeline.py
+
 ├── tests/ # Unit tests
+
 ├── deploy/
+
 │ └── airflow/ # Airflow DAGs and Docker setup
+
 │ ├── dags/
+
 │ │ └── ml_pipeline.py
+
 │ ├── docker-compose.yml
+
 │ └── Dockerfile
+
 ├── .pre-commit-config.yaml
+
 ├── requirements.txt
+
 └── README.md
 
 ---
