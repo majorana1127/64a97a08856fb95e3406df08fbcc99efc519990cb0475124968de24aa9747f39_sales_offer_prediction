@@ -1,0 +1,30 @@
+# Ignore virtualenvs
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# MLflow artifacts/logs
+mlruns/
+mlflow/
+logs/
+outputs/
+data/
+reports/
+
+# Airflow
+airflow/

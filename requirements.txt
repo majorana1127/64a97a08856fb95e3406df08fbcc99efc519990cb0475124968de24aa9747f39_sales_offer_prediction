@@ -3,3 +3,8 @@ numpy
 scikit-learn
 xgboost
 joblib
+
+kaggle
+mlflow==3.1.4
+evidently==0.7.11
+psycopg2-binary==2.9.10
