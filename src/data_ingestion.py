@@ -17,7 +17,7 @@ def download_bank_data(data_dir="data"):
         "--unzip"
     ], check=True)
     print("Download complete.")
-    return csv_path
+    return csv_paths
 
-if __name__ == "__main__":
-    download_bank_data()
+# if __name__ == "__main__":
+#     download_bank_data()
