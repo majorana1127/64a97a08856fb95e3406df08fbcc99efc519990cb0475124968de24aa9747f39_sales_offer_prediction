@@ -2,168 +2,178 @@
 
 # Sales Offer Prediction
 
-This project predicts whether a potential customer will accept a deposit offer over a phone call. The dataset contains demographic and campaign-related features collected from previous marketing calls. The target is binary: yes or no to opening a deposit account. This was a dataset I had used previously when applying for work, so I just reused the code for my model then.
+This project predicts whether a potential customer will accept a deposit offer over a phone call. The dataset contains demographic and campaign-related features collected from previous marketing calls. The target is binary: yes or no to opening a deposit account. The dataset is from Kaggle, and I originally used it for a prior job application.
 
 ---
 
 ## Project Overview
 
-This is a binary classification problem using a bank marketing dataset. Each row represents a call made to a client, along with their personal and contact info, and whether they said yes or no to the offer.
+This is a binary classification pipeline using a bank marketing dataset. Each row represents a call made to a client, along with their personal and contact info, and whether they said yes or no to the offer.
 
-This pipeline:
-- Preprocesses the data
-- Trains an XGBoost classifier with hyperparameter tuning
-- Evaluates model performance
-- Outputs predictions, metrics, and the trained model
-- Is orchestrated using Apache Airflow and runs inside Docker containers
+### HW3 Pipeline Features
 
-The project is modular and production-ready, following the MLOps lifecycle.
+- Preprocesses the data (including simulated data drift for testing)
+- Trains an XGBoost classifier (MLflow tracks parameters/artifacts)
+- Evaluates model performance (metrics logged to MLflow)
+- Detects drift with [Evidently](https://evidentlyai.com/) (where environment allows)
+- Orchestrates all steps in Airflow (branches if drift detected)
+- Runs end-to-end inside Docker containers
 
+This project is modular and follows MLOps practices.
+
+---
+
+## HW3 New Features & Challenges
+
+
+- **MLflow integration:** All training, evaluation, and pipeline steps are logged to an MLflow tracking server running in Docker.
+- **Custom PyFunc model:** The pipeline saves the trained XGBoost model with a custom MLflow wrapper.
+- **Drift simulation and detection:** Preprocessing generates drifted test/train data and a drift detector (Evidently) checks for data drift.
+- **Airflow DAG branching:** The DAG branches to retrain or complete the pipeline based on drift detection results.
+
+### Major Technical Challenges
+
+> #### Python/Windows/Evidently Compatibility
+> Setting up `evidently` for drift detection proved extremely difficult on Windows with Python 3.11+. Despite several clean venvs, forced reinstalls, and package downgrades, the module import failed due to pip/venv path issues and (likely) version conflicts. This issue persisted even when other packages (mlflow, scikit-learn, xgboost, etc.) worked fine in the same environment.
+>
+> As a result, the drift detection code is included and works in principle, but could not be demonstrated end-to-end on my local system.
 ---
 
 ## How to Get the Data
 
 The dataset is stored in the `data/` directory as `bank.csv`.
 
-If sharing this repo without data, it can be accessed from Kaggle:
+If sharing this repo without data, it can be accessed from Kaggle:  
 https://www.kaggle.com/datasets/janiobachmann/bank-marketing-dataset?resource=download
 
 ---
 
 ## Folder Structure
 
+```
 project_root/
-
-├── data/ # Raw CSV data
-
-├── models/ # Saved XGBoost model
-
-├── outputs/ # Predictions
-
-├── reports/ # Evaluation metrics
-
-├── src/ # All pipeline code
-
-│ ├── data_preprocessing.py
-
-│ ├── feature_engineering.py
-
-│ ├── model_training.py
-
-│ ├── evaluation.py
-
-│ └── run_pipeline.py
-
-├── tests/ # Unit tests
-
+├── data/                 # Raw and processed data
+├── models/               # Trained model(s)
+├── outputs/              # Predictions
+├── reports/              # Evaluation metrics and drift reports
+├── src/                  # All pipeline code
+│   ├── data_preprocessing.py
+│   ├── feature_engineering.py
+│   ├── model_training.py
+│   ├── evaluation.py
+│   ├── drift_detection.py
+│   └── run_pipeline.py
+├── tests/                # Unit tests
 ├── deploy/
-
-│ └── airflow/ # Airflow DAGs and Docker setup
-
-│ ├── dags/
-
-│ │ └── ml_pipeline.py
-
-│ ├── docker-compose.yml
-
-│ └── Dockerfile
-
+│   └── airflow/
+│       ├── dags/
+│       │   └── ml_pipeline.py
+│       ├── docker-compose.yml
+│       └── Dockerfile
 ├── .pre-commit-config.yaml
-
 ├── requirements.txt
-
 └── README.md
+```
 
 ---
 
 ## Setup Instructions
 
-this project uses [uv](https://astral.sh/blog/uv-intro/) for fast environment management.
+### Environment
 
-### To run locally:
+This project uses Python 3.11 and [uv](https://astral.sh/blog/uv-intro/) for fast environment management (but works with pip too).
 
-1. create a virtual environment: \uv\uv.exe venv
-2. activate it: .venv\Scripts\activate
-3. install dependencies: pip install pandas, numpy, scikit-learn, xgboost, pytest
-
-## Running the pipeline
-
-from the project root: python src/run_pipeline.py
-
-this will:
-- load and preprocess the data
-- train an xgboost model with hyperparameter tuning
-- evaluate accuracy, f1, and confusion matrix
-- save metrics to `reports/metrics.txt`
-- save predictions to `outputs/predictions.csv`
-- save the model to `models/model.pkl`
-
-## Docker and Airflow Setup
-
-to run with Airflow in Docker:
-
-1. Go to the Airflow directory:
-    ```
-    cd deploy/airflow
-    ```
-
-2. Build and start containers:
-    ```
-    docker-compose up -d --build
-    ```
-
-3. Access the Airflow UI:
-    ```
-    http://localhost:8080
-    ```
-    Login with:
-    - Username: `airflow`
-    - Password: `airflow`
-
-4. Trigger the DAG `ml_pipeline` manually from the UI or test individual tasks using the command line (see below).
-
-## Task Testing (Airflow CLI):
-
-To test individual DAG tasks without triggering the full DAG:
+**To run locally:**
+```bash
+python -m venv .venv
+.venv\Scripts\Activate.ps1      # (Windows PowerShell)
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
-docker-compose exec webserver airflow tasks test ml_pipeline preprocess 2025-08-01
-docker-compose exec webserver airflow tasks test ml_pipeline train 2025-08-01
-docker-compose exec webserver airflow tasks test ml_pipeline evaluate 2025-08-01
+
+---
+
+## Running the Pipeline
+
+From the project root:
+```bash
+python -m src.run_pipeline
 ```
-Logs will be saved under `airflow/logs/`.
+
+This will:
+- Download and preprocess the data if missing
+- Train an XGBoost model (logs run to MLflow)
+- Evaluate accuracy and f1-score (logs metrics to MLflow)
+- (Attempt) to run drift detection (skipped if environment blocks Evidently)
+- Save metrics to `reports/evaluation_results.json`
+- Save predictions to `outputs/predictions.csv`
+- Save the model to `models/model.pkl`
+
+---
+
+## MLflow and Airflow Setup (HW3)
+
+MLflow and Airflow run via Docker Compose for easy reproducibility:
+
+1. **Copy `docker-compose.yml` to the project root** (or use `-f` flag from `deploy/airflow`).
+2. **Start the containers:**
+    ```bash
+    docker compose up -d
+    ```
+3. **Access:**
+    - MLflow UI: [http://localhost:5000](http://localhost:5000)
+    - Airflow UI: [http://localhost:8080](http://localhost:8080)
+      - Username: `airflow`
+      - Password: `airflow`
+4. **Trigger the DAG** `ml_pipeline` manually from the Airflow UI or test tasks individually (see below).
+
+---
+
+## Airflow Task Testing (CLI)
+
+To test individual tasks:
+```bash
+docker compose exec airflow airflow tasks test ml_pipeline preprocess_data 2025-08-01
+docker compose exec airflow airflow tasks test ml_pipeline train_model 2025-08-01
+docker compose exec airflow airflow tasks test ml_pipeline evaluate_model 2025-08-01
+docker compose exec airflow airflow tasks test ml_pipeline drift_detection 2025-08-01
+```
+
+---
 
 ## pre-commit configuration
 
-this project uses pre-commit hooks to catch code issues early.
+This project uses pre-commit hooks to catch code issues early.
 
-### hooks used:
-
+**Hooks used:**
 - `ruff`: Python formatting and linting
 - `trailing-whitespace`: Removes trailing spaces
 - `end-of-file-fixer`: Ensures newline at EOF
 - `yamllint`: Validates YAML files (e.g., docker-compose.yml)
 
-### Setup:
-uv pip install pre-commit
+**Setup:**
+```bash
+pip install pre-commit
 pre-commit install
 pre-commit run --all-files
+```
+*Yamllint is used for Docker configs. Hadolint not included to avoid Windows system dependency headaches.*
 
-
-### Justification:
-
-This project uses yamllint for validating YAML files such as docker-compose.yml. yamllint helps ensure proper formatting and structure, which is critical for Docker orchestration. hadolint was not included to avoid additional system dependencies on Windows, but yamllint sufficiently covers config validation for this project.
 ---
 
 ## Tests
 
-Basic unit tests are included in `tests/test_pipeline.py`.
+Basic unit tests are included in `tests/`.
 
-They check that:
+They check:
 - Data preprocessing returns valid splits
 - Model training returns a valid classifier
 - Evaluation creates the expected metrics output
 
-To run tests: pytest
+**To run tests:**
+```bash
+pytest
+```
 
 ---
 
@@ -186,3 +196,15 @@ I had no prior experience with Docker or Airflow, so even just understanding wha
 I ran into issues like missing poetry.lock, failed Docker builds, ports not working, and modules not being found inside containers even though they worked locally. At one point, I couldn’t even get localhost:8080 to load, and when it finally did, the Airflow login didn’t work. There were times it felt like everything was broken and I wanted to give up.
 
 Even so, I learned how to read logs properly, how to debug DAGs, how to fix broken containers, and how to use pre-commit for Docker/YAML checks. More importantly, I got a working, orchestrated ML pipeline that runs inside containers — something that sounded impossible a few days ago.
+
+---
+
+## Reflection HW3: MLOps Integration & Drift Detection
+
+This homework was the most technically challenging for me so far, mostly due to compatibility and environment issues with new libraries on Windows. MLflow and Docker were straightforward after HW2, but integrating Evidently for drift detection proved unexpectedly difficult. 
+
+I spent hours trying different versions, recreating virtual environments, and even switching Python interpreters. The `evidently` package would install but never import successfully, always throwing `ModuleNotFoundError` for submodules (even when `pip show evidently` showed the right version and path). Using direct file paths, absolute pip/python calls, and even manual copying of the library did not solve the problem.
+
+Because of this, the drift detection step is implemented in the codebase but could not be run to completion on my laptop.
+
+---

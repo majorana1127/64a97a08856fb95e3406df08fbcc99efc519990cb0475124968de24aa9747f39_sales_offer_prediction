@@ -1,62 +1,44 @@
----
+version: '3.8'
+
 services:
   postgres:
-    image: postgres:13
+    image: postgres:15.8-alpine
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_USER: mlflow
+      POSTGRES_PASSWORD: mlflow
+      POSTGRES_DB: mlflow
+    ports:
+      - "5432:5432"
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
-    restart: always
 
-  webserver:
-    image: apache/airflow:2.9.3
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.1.4
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql://mlflow:mlflow@postgres:5432/mlflow
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: /mlflow/artifacts
     depends_on:
       - postgres
-    environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: >
-        postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
-      AIRFLOW__WEBSERVER__DEFAULT_USER: airflow
-      AIRFLOW__WEBSERVER__DEFAULT_PASSWORD: airflow
     volumes:
-      - ./dags:/opt/airflow/dags
-      - ./logs:/opt/airflow/logs
-      - ./requirements.txt:/requirements.txt
-      - ../../src:/opt/airflow/src
-      - ../../data:/opt/airflow/data
-      - ../../models:/opt/airflow/models
-      - ../../reports:/opt/airflow/reports
-    command: >
-      bash -c "pip install --no-cache-dir -r /requirements.txt &&
-      airflow db upgrade &&
-      airflow webserver"
+      - ./mlflow:/mlflow
+
+  airflow:
+    image: apache/airflow:2.9.1
+    environment:
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    volumes:
+      - ./deploy/airflow/dags:/opt/airflow/dags
+      - ./data:/opt/airflow/data
+      - ./reports:/opt/airflow/reports
+      - ./models:/opt/airflow/models
     ports:
       - "8080:8080"
-    restart: always
-
-  scheduler:
-    image: apache/airflow:2.9.3
+    command: webserver
     depends_on:
       - postgres
-    environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: >
-        postgresql+psycopg2://airflow:airflow@postgres/airflow
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./logs:/opt/airflow/logs
-      - ./requirements.txt:/requirements.txt
-      - ../../src:/opt/airflow/src
-      - ../../data:/opt/airflow/data
-      - ../../models:/opt/airflow/models
-      - ../../reports:/opt/airflow/reports
-    command: >
-      bash -c "pip install --no-cache-dir -r /requirements.txt &&
-      airflow scheduler"
-    restart: always
+      - mlflow
 
 volumes:
   postgres-db-volume:
